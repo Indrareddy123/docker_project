@@ -1,74 +1,18 @@
 pipeline {
     agent any
 
-    environment {
-        REPO_URL = 'https://github.com/Indrareddy123/docker_project.git'
-        CREDENTIALS_ID = 'github-pat-2'
-        PYTHON_ENV = 'chatbot_venv'
-    }
-
     stages {
-        stage('Checkout') {
+        stage('Trigger Remote Job') {
             steps {
-                git credentialsId: "${CREDENTIALS_ID}", url: "${REPO_URL}", branch: 'main'
+                script {
+                    // Print the message to the Jenkins console
+                    echo 'Hello, how can I help?'
+                    
+                    // Trigger the remote job using curl
+                    def jenkinsUrl = 'http://localhost:8080/job/chat_bot_ci/build?token=chatbot_build_trigger'
+                    sh "curl -X POST ${jenkinsUrl}"
+                }
             }
-        }
-
-        stage('Set Up Virtual Environment') {
-            steps {
-                sh '''
-                    python3 -m venv ${PYTHON_ENV}
-                    source ${PYTHON_ENV}/bin/activate
-                    pip install --upgrade pip
-                    pip install -r requirements.txt
-                '''
-            }
-        }
-
-        stage('Run Unit Tests') {
-            steps {
-                sh '''
-                    source ${PYTHON_ENV}/bin/activate
-                    pytest tests/
-                '''
-            }
-        }
-
-        stage('Build Chatbot') {
-            steps {
-                echo 'Building chatbot application...'
-                // Add your build steps here if needed
-            }
-        }
-
-        stage('Deploy to Staging') {
-            steps {
-                echo 'Deploying to staging environment...'
-                // Add your deployment commands here
-            }
-        }
-
-        stage('Run Post-Deployment Tests on Staging') {
-            steps {
-                echo 'Running post-deployment tests...'
-                // Add your test logic here
-            }
-        }
-
-        stage('Deploy to Production') {
-            steps {
-                echo 'Deploying to production...'
-                // Add production deployment steps
-            }
-        }
-    }
-
-    post {
-        failure {
-            echo 'Chatbot deployment failed!'
-        }
-        success {
-            echo 'Chatbot deployed successfully!'
         }
     }
 }
