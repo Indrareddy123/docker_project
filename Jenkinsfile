@@ -8,7 +8,7 @@ pipeline {
     stages {
         stage('Clone Repository') {
             steps {
-                git credentialsId: 'github-pat', url: 'https://github.com/Indrareddy123/chatbot-project.git'
+                git credentialsId: 'github-pat', url: 'https://github.com/Indrareddy123/docker_project.git'
             }
         }
 
