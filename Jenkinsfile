@@ -1,45 +1,34 @@
 pipeline {
     agent any
+
     environment {
-        DOCKER_IMAGE = "chatbot:latest"
-        DOCKER_REGISTRY = "your_docker_registry_url"
+        IMAGE_NAME = 'chatbot-image'
+        CONTAINER_NAME = 'chatbot-container'
     }
+
     stages {
-        stage('Checkout') {
+        stage('Clone Repository') {
             steps {
-                checkout scm
+                git 'https://github.com/Indrareddy123/docker_project.git'
             }
         }
+
         stage('Build Docker Image') {
             steps {
                 script {
-                    // Build the Docker image
-                    sh 'docker build -t ${DOCKER_IMAGE} .'
+                    sh "docker build -t ${IMAGE_NAME} ."
                 }
             }
         }
-        stage('Run Docker Container') {
+
+        stage('Deploy Locally') {
             steps {
                 script {
-                    // Run the container
-                    sh 'docker run -d -p 5000:5000 ${DOCKER_IMAGE}'
-                }
-            }
-        }
-        stage('Test Chatbot') {
-            steps {
-                script {
-                    // Add test steps to verify if the chatbot is working
-                    // Example: curl to check the chatbot's response
-                    sh 'curl http://localhost:5000/test-endpoint'
-                }
-            }
-        }
-        stage('Clean Up') {
-            steps {
-                script {
-                    // Clean up by stopping and removing the container
-                    sh 'docker ps -q --filter "ancestor=${DOCKER_IMAGE}" | xargs docker stop | xargs docker rm'
+                    sh """
+                        docker stop ${CONTAINER_NAME} || true
+                        docker rm ${CONTAINER_NAME} || true
+                        docker run -d --name ${CONTAINER_NAME} -p 5000:5000 ${IMAGE_NAME}
+                    """
                 }
             }
         }
