@@ -1,34 +1,12 @@
 pipeline {
     agent any
 
-    environment {
-        IMAGE_NAME = 'chatbot-image'
-        CONTAINER_NAME = 'chatbot-container-ir'
-    }
-
     stages {
-        stage('Clone Repository') {
-            steps {
-                git 'https://github.com/Indrareddy123/docker_project.git'
-            }
-        }
-
-        stage('Build Docker Image') {
+        stage('Trigger Remote Job') {
             steps {
                 script {
-                    sh "docker build -t ${IMAGE_NAME} ."
-                }
-            }
-        }
-
-        stage('Deploy Locally') {
-            steps {
-                script {
-                    sh """
-                        docker stop ${CONTAINER_NAME} || true
-                        docker rm ${CONTAINER_NAME} || true
-                        docker run -d --name ${CONTAINER_NAME} -p 8080:8080 ${IMAGE_NAME}
-                    """
+                    def jenkinsUrl = 'http://localhost:8080/job/chat_bot_ci/build?token=chatbot_build_trigger'
+                    sh "curl -X POST ${jenkinsUrl}"
                 }
             }
         }
