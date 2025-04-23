@@ -3,23 +3,24 @@ pipeline {
 
     environment {
         REPO_URL = 'https://github.com/Indrareddy123/docker_project.git'
-        CREDENTIAL_ID = 'github-pat-chatbot'
+        CREDENTIALS_ID = 'github-pat-2'
+        PYTHON_ENV = 'chatbot_venv'
     }
 
     stages {
-        stage('Clone Repository') {
+        stage('Checkout') {
             steps {
-                git credentialsId: "${CREDENTIAL_ID}", url: "${REPO_URL}", branch: 'main'
+                git credentialsId: "${CREDENTIALS_ID}", url: "${REPO_URL}", branch: 'main'
             }
         }
 
-        stage('Set Up Python Environment') {
+        stage('Set Up Virtual Environment') {
             steps {
                 sh '''
-                    python3 -m venv chatbot_env
-                    source chatbot_env/bin/activate
+                    python3 -m venv ${PYTHON_ENV}
+                    source ${PYTHON_ENV}/bin/activate
                     pip install --upgrade pip
-                    pip install -r requirements.txt || echo "No requirements.txt found"
+                    pip install -r requirements.txt
                 '''
             }
         }
@@ -27,50 +28,47 @@ pipeline {
         stage('Run Unit Tests') {
             steps {
                 sh '''
-                    source chatbot_env/bin/activate
-                    pytest || echo "No tests found"
+                    source ${PYTHON_ENV}/bin/activate
+                    pytest tests/
                 '''
             }
         }
 
         stage('Build Chatbot') {
             steps {
-                echo 'Simulating build...'
-                sh 'echo "Build complete"'
+                echo 'Building chatbot application...'
+                // Add your build steps here if needed
             }
         }
 
         stage('Deploy to Staging') {
             steps {
-                echo 'Deploying chatbot to staging...'
-                // Add your actual deployment commands here
+                echo 'Deploying to staging environment...'
+                // Add your deployment commands here
             }
         }
 
-        stage('Post-Deployment Tests') {
+        stage('Run Post-Deployment Tests on Staging') {
             steps {
                 echo 'Running post-deployment tests...'
-                // Add real post-deployment test commands here
+                // Add your test logic here
             }
         }
 
         stage('Deploy to Production') {
-            when {
-                branch 'main'
-            }
             steps {
-                echo 'Deploying chatbot to production...'
-                // Add your production deployment steps here
+                echo 'Deploying to production...'
+                // Add production deployment steps
             }
         }
     }
 
     post {
-        success {
-            echo '✅ Chatbot deployed successfully!'
-        }
         failure {
-            echo '❌ Chatbot deployment failed!'
+            echo 'Chatbot deployment failed!'
+        }
+        success {
+            echo 'Chatbot deployed successfully!'
         }
     }
 }
