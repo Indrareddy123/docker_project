@@ -1,16 +1,41 @@
 pipeline {
     agent any
 
+    environment {
+        IMAGE_NAME = "indraaavula/chatbot-container-interactive-v2"
+        TAG = "latest"
+    }
+
     stages {
-        stage('Trigger Remote Job') {
+        stage('Clone Repo') {
+            steps {
+                git 'https://github.com/Indrareddy123/docker_project.git'
+            }
+        }
+
+        stage('Build Docker Image') {
             steps {
                 script {
-                    // Print the message to the Jenkins console
-                    echo 'Hello, how can I help?'
-                    
-                    // Trigger the remote job using curl
-                    def jenkinsUrl = 'http://localhost:8080/job/chat_bot_ci/build?token=chatbot_build_trigger'
-                    sh "curl -X POST ${jenkinsUrl}"
+                    docker.build("${IMAGE_NAME}:${TAG}")
+                }
+            }
+        }
+
+        stage('Push to Docker Hub') {
+            steps {
+                withDockerRegistry([credentialsId: 'docker-hub-creds', url: '']) {
+                    script {
+                        docker.image("${IMAGE_NAME}:${TAG}").push()
+                    }
+                }
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                script {
+                    sh "docker rm -f chatbot-deploy || true"
+                    sh "docker run -d --name chatbot-deploy ${IMAGE_NAME}:${TAG}"
                 }
             }
         }
