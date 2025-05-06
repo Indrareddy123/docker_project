@@ -9,7 +9,7 @@ pipeline {
                     echo 'Hello, how can I help?'
                     
                     // Trigger the remote job using curl
-                    def jenkinsUrl = 'http://localhost:8080/job/chat_bot_ci/build?token=chatbot_build_trigger'
+                    def jenkinsUrl = 'http://localhost:8081/job/chat_bot_ci/build?token=chatbot_build_trigger'
                     sh "curl -X POST ${jenkinsUrl}"
                 }
             }
